@@ -40,7 +40,7 @@ variable "JAMFPRO_INSTANCE_FQDN" {
 variable "JAMFPRO_AUTH_METHOD" {
   description = "Auth method chosen for Jamf. Options are 'basic' or 'oauth2'."
   sensitive   = true
-  default     = ""
+  default     = "oauth2"
 }
 
 variable "JAMFPRO_CLIENT_ID" {
