@@ -121,16 +121,5 @@ resource "jamfpro_restricted_software" "restricted_software_001" {
 
   scope { // scope entities will always be stated asending order. User sort() to sort the list if needed.
     all_computers      = true
-    computer_ids       = sort([21, 16])
-    computer_group_ids = ([55, 78])
-    building_ids       = ([1348, 1349])
-    department_ids     = ([37287, 37288])
-    exclusions {
-      computer_ids                         = [14, 15]
-      computer_group_ids                   = [118]
-      building_ids                         = ([1348, 1349])
-      department_ids                       = ([37287, 37288])
-      directory_service_or_local_usernames = ["Jane Smith", "John Doe"]
-    }
   }
 }
