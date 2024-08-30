@@ -1,14 +1,12 @@
-name: "00 - terraform solution proving: sandbox"
+name: "01 - terraform solution proving: sandbox"
 
 on:
   push:
     branches:
       - 'feature-*'
       - 'bugfix-*'
-      - 'release-*'
       - 'hotfix-*'
       - 'chore-*'
-      - 'spike-*'
       - 'config-*'
       - 'docs-*'
       - 'test-*'
@@ -16,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       branch_name:
-        description: 'Branch to promote to Sandbox (must start with feature-, bugfix-, release-, hotfix-, chore-, spike-, config-, docs-, or test-)'
+        description: 'Branch to promote to Sandbox (must start with feature-, bugfix-, hotfix-, chore-, config-, docs-, or test-)'
         required: true
         default: 'feature-'
 
@@ -40,10 +38,8 @@ jobs:
         github.event_name == 'workflow_dispatch' ||
         startsWith(github.ref, 'refs/heads/feature-') ||
         startsWith(github.ref, 'refs/heads/bugfix-') ||
-        startsWith(github.ref, 'refs/heads/release-') ||
         startsWith(github.ref, 'refs/heads/hotfix-') ||
         startsWith(github.ref, 'refs/heads/chore-') ||
-        startsWith(github.ref, 'refs/heads/spike-') ||
         startsWith(github.ref, 'refs/heads/config-') ||
         startsWith(github.ref, 'refs/heads/docs-') ||
         startsWith(github.ref, 'refs/heads/test-')
@@ -59,7 +55,7 @@ jobs:
         run: |
           branch="${{ github.event.inputs.branch_name }}"
           if [[ ! "$branch" =~ ^(feature|bugfix|release|hotfix|chore|spike|config|docs|test)- ]]; then
-            echo "Error: Branch name must start with 'feature-', 'bugfix-', 'release-', 'hotfix-', 'chore-', 'spike-', 'config-', 'docs-', or 'test-'"
+            echo "Error: Branch name must start with 'feature-', 'bugfix-', 'hotfix-', 'chore-', 'config-', 'docs-', or 'test-'"
             exit 1
           fi
 

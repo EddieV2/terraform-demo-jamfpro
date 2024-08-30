@@ -12,6 +12,12 @@ on:
       notification_channel:
         required: true
         type: string
+      new_version:
+        required: false
+        type: string
+      release_pr_number:
+        required: false
+        type: string
 
 jobs:
   send-notification:
@@ -23,7 +29,10 @@ jobs:
         with:
           status: ${{ inputs.result }}
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took,pullRequest
-          text: "Deployment to ${{ inputs.environment }} ${{ inputs.result }}"
+          text: |
+            Deployment to ${{ inputs.environment }} ${{ inputs.result }}
+            New Version: ${{ inputs.new_version }}
+            Release PR: https://github.com/${{ github.repository }}/pull/${{ inputs.release_pr_number }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
@@ -33,7 +42,9 @@ jobs:
         with:
           github-token: ${{ github.token }}
           ms-teams-webhook-uri: ${{ secrets.MSTEAMS_WEBHOOK_URL }}
-          notification-summary: "Deployment to ${{ inputs.environment }} ${{ inputs.result }}"
-          notification-color: ${{ inputs.result == 'success' && '3066993' || 'D3222A' }}
+          notification-summary: |
+            Deployment to ${{ inputs.environment }} ${{ inputs.result }} | New Version: ${{ inputs.new_version }}<br>
+            Release PR: <a href="https://github.com/${{ github.repository }}/pull/${{ inputs.release_pr_number }}">PR #${{ inputs.release_pr_number }}</a>
+          notification-color: ${{ inputs.result == 'success' && '28a745' || 'dc3545' }}
           timezone: "UTC"
           verbose-logging: true

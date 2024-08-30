@@ -1,12 +1,12 @@
-# resource "jamfpro_script" "jamfpro_script_001" {
-#   name            = "tf-ghatest-correct-application-permissions-v1.0"
-#   script_contents = file("${path.module}/support_files/scripts/Correct Application Permissions.sh")
-#   os_requirements = "13"
-#   priority        = "BEFORE"
-#   info            = "Adds target user or group to specified group membership, or removes said membership."
-#   notes           = "Jamf Pro script parameters: 4 -> 7"
-#   parameter4      = "Google Chrome" // targetApplication
-# }
+resource "jamfpro_script" "jamfpro_script_001" {
+  name            = "tf-ghatest-correct-application-permissions-v1.0"
+  script_contents = file("${path.module}/support_files/scripts/Correct Application Permissions.sh")
+  os_requirements = "13"
+  priority        = "BEFORE"
+  info            = "Adds target user or group to specified group membership, or removes said membership."
+  notes           = "Jamf Pro script parameters: 4 -> 7"
+  parameter4      = "Google Chrome" // targetApplication
+}
 
 # data "jamfpro_script" "jamfpro_script_001_data" {
 #   id = jamfpro_script.jamfpro_script_001.id

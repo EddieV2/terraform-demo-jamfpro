@@ -1,0 +1,95 @@
+name: Create Version and Release
+
+on:
+  workflow_call:
+    inputs:
+      source_environment:
+        required: true
+        type: string
+      config_directory:
+        required: true
+        type: string
+      debug:
+        required: false
+        type: boolean
+        default: false
+    outputs:
+      new_version:
+        description: "The new release version number"
+        value: ${{ jobs.create-version-and-release.outputs.new_version }}
+      config_hash:
+        description: "The new release configuration hash"
+        value: ${{ jobs.create-version-and-release.outputs.config_hash }}
+
+jobs:
+  create-version-and-release:
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.combine_version_hash.outputs.new_version }}
+      config_hash: ${{ steps.generate_hash.outputs.config_hash }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.7
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.source_environment }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.2.0
+        with:
+          python-version: '3.x'
+
+      - name: Determine release version
+        id: determine_version
+        run: |
+          python $GITHUB_WORKSPACE/workload/scripts/version_determinator.py '${{ inputs.config_directory }}'
+
+      - name: Generate release hash
+        id: generate_hash
+        run: |
+          python $GITHUB_WORKSPACE/workload/scripts/hash_generator.py '${{ inputs.config_directory }}'
+
+      - name: Combine version and hash
+        id: combine_version_hash
+        run: |
+          NEW_VERSION="${{ steps.determine_version.outputs.version }}-${{ steps.generate_hash.outputs.config_hash }}"
+          echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+          echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
+          echo "CONFIG_HASH=${{ steps.generate_hash.outputs.config_hash }}" >> $GITHUB_ENV
+
+      - name: Display new release version
+        if: ${{ inputs.debug == 'true' }}
+        run: |
+          echo "New version: ${{ env.NEW_VERSION }}"
+
+      - name: Create and push new tag
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git tag ${{ env.NEW_VERSION }}
+          git push origin ${{ env.NEW_VERSION }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2.0.8
+        with:
+          tag_name: ${{ env.NEW_VERSION }}
+          name: Release ${{ env.NEW_VERSION }}
+          body: |
+            This release was manually triggered by @${{ github.actor }}.
+            Source: ${{ inputs.source_environment }}
+            Configuration Hash: ${{ env.CONFIG_HASH }}
+          draft: false
+          prerelease: false
+          files: |
+            ${{ inputs.config_directory }}/**/*.tf
+            README.md
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and push release branch
+        id: create_release_branch
+        run: |
+          git checkout -b release-${{ env.NEW_VERSION }}
+          git push origin release-${{ env.NEW_VERSION }}
+

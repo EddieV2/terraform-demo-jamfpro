@@ -1,0 +1,54 @@
+name: "02 - release and terraform plan: staging"
+
+on:
+  workflow_dispatch:
+    inputs:
+      debug:
+        description: 'Debug mode'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
+
+jobs:
+  check-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if running on sandbox branch
+        if: github.ref != 'refs/heads/sandbox'
+        run: |
+          echo "Error: This workflow can only be run from the sandbox branch."
+          exit 1
+          
+  create-version-and-release:
+    uses: ./.github/workflows/create-version-and-release.yml
+    with:
+      source_environment: "sandbox"
+      config_directory: "workload/terraform/jamfpro"
+      debug: ${{ inputs.debug }}
+
+  terraform-plan:
+    needs: create-version-and-release
+    uses: ./.github/workflows/terraform-plan.yml
+    with:
+      tf_cloud_organization: "deploymenttheory"
+      tf_workspace: "terraform-jamfpro-staging" 
+      target_environment: "staging"
+      debug: ${{ inputs.debug }}
+      config_directory: "workload/terraform/jamfpro"
+      new_version: ${{ needs.create-version-and-release.outputs.new_version }}
+    secrets:
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+
+  send-notification:
+    needs: [create-version-and-release, terraform-plan]
+    if: always()
+    uses: ./.github/workflows/send-notification.yml
+    with:
+      environment: "staging"
+      result: ${{ needs.terraform-plan.result == 'success' && 'success' || 'failure' }}
+      notification_channel: msteams
+      new_version: ${{ needs.create-version-and-release.outputs.new_version }}
+    secrets: inherit

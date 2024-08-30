@@ -1,6 +1,6 @@
 
 # resource "jamfpro_building" "jamfpro_building_001" {
-#   name            = "tf-ghatest-Apple-Park"
+#   name            = "tf-dw-ghatest-Apple-Park"
 #   street_address1 = "The McIntosh Tree"
 #   street_address2 = "One Apple Park Way"
 #   city            = "Cupertino"
@@ -10,7 +10,7 @@
 # }
 
 # resource "jamfpro_building" "jamfpro_building_002" {
-#   name            = "Jamf Headquarters"
+#   name            = "tf-dw-ghatest-jamf-headquarters"
 #   street_address1 = "100 Washington Ave S"
 #   street_address2 = "Suite 1100"
 #   city            = "Minneapolis"

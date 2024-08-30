@@ -1,0 +1,138 @@
+name: terraform plan
+
+on:
+  workflow_call:
+    inputs:
+      tf_cloud_organization:
+        required: true
+        type: string
+      tf_workspace:
+        required: true
+        type: string
+      target_environment:
+        required: true
+        type: string
+      debug:
+        required: false
+        type: boolean
+        default: false
+      config_directory:
+        required: true
+        type: string
+      new_version:
+        required: true
+        type: string
+    secrets:
+      TF_API_TOKEN:
+        required: true
+
+env:
+  CONFIG_DIRECTORY: ${{ inputs.config_directory }}
+  TF_CLOUD_ORGANIZATION: ${{ inputs.tf_cloud_organization }}
+  TF_WORKSPACE: ${{ inputs.tf_workspace }}
+
+jobs:
+  terraform-plan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4.1.7
+        with:
+          ref: release-${{ inputs.new_version }}
+          fetch-depth: 0
+      
+      - name: Set TF_API_TOKEN as environment variable
+        run: echo "TF_API_TOKEN=${{ secrets.TF_API_TOKEN }}" >> $GITHUB_ENV
+      
+      - name: Verify Terraform Cloud API Token
+        if: ${{ inputs.debug }}
+        run: |
+          if [ -z "$TF_API_TOKEN" ]; then
+            echo "Error: TF_API_TOKEN is not set"
+            exit 1
+          else
+            echo "TF_API_TOKEN is set (value hidden for security)"
+          fi
+      
+      - name: Check Workspace Existence
+        if: ${{ inputs.debug }}
+        run: |
+          response=$(curl -s \
+            --header "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" \
+            --header "Content-Type: application/vnd.api+json" \
+            "https://app.terraform.io/api/v2/organizations/$TF_CLOUD_ORGANIZATION/workspaces/$TF_WORKSPACE")
+          
+          if echo $response | grep -q "Not found"; then
+            echo "Error: Workspace $TF_WORKSPACE not found in organization $TF_CLOUD_ORGANIZATION"
+            exit 1
+          else
+            echo "Workspace $TF_WORKSPACE exists in organization $TF_CLOUD_ORGANIZATION"
+          fi
+
+      - name: Upload Configuration
+        uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.3.1
+        id: plan-upload
+        with:
+          workspace: ${{ env.TF_WORKSPACE }}
+          directory: ${{ env.CONFIG_DIRECTORY }}
+          speculative: true
+
+      - name: Create Plan Run
+        uses: hashicorp/tfc-workflows-github/actions/create-run@v1.3.1
+        id: plan-run
+        with:
+          workspace: ${{ env.TF_WORKSPACE }}
+          configuration_version: ${{ steps.plan-upload.outputs.configuration_version_id }}
+          plan_only: true
+
+      - name: Get Plan Output
+        uses: hashicorp/tfc-workflows-github/actions/plan-output@v1.3.1
+        id: plan-output
+        with:
+          plan: ${{ fromJSON(steps.plan-run.outputs.payload).data.relationships.plan.data.id }}
+
+      - name: Create PR with Terraform Plan
+        uses: actions/github-script@v7.0.1
+        id: create-pr
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const additions = parseInt(`${{ steps.plan-output.outputs.add }}`, 10);
+            const changes = parseInt(`${{ steps.plan-output.outputs.change }}`, 10);
+            const destructions = parseInt(`${{ steps.plan-output.outputs.destroy }}`, 10);
+
+            if (additions === 0 && changes === 0 && destructions === 0) {
+              console.log('No changes detected in the Terraform plan. Skipping PR creation.');
+              return; // Exit the script without creating a PR
+            }
+
+            const planSummary = `
+            ## Terraform Cloud Plan Output for ${{ inputs.target_environment }}
+
+            ### Plan Details:
+            - **Plan ID:** ${{ steps.plan-output.outputs.plan_id }}
+            - **Workspace:** ${{ env.TF_WORKSPACE }}
+            - **Additions:** ${{ steps.plan-output.outputs.add }}
+            - **Changes:** ${{ steps.plan-output.outputs.change }}
+            - **Destructions:** ${{ steps.plan-output.outputs.destroy }}
+            
+            ### Summary:
+            \`\`\`
+            Plan: ${{ steps.plan-output.outputs.add }} to add, ${{ steps.plan-output.outputs.change }} to change, ${{ steps.plan-output.outputs.destroy }} to destroy.
+            \`\`\`
+            [View Full Terraform Cloud Plan](${{ steps.plan-run.outputs.run_link }})
+            `;
+
+            const { data: pullRequest } = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Terraform Plan for ${{ inputs.target_environment }} Release ${{ inputs.new_version }}`,
+              head: `release-${{ inputs.new_version }}`,
+              base: '${{ inputs.target_environment }}',
+              body: planSummary
+            });
+
+            core.setOutput('pull-request-url', pullRequest.html_url);
