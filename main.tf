@@ -107,6 +107,24 @@ variable "jamfpro_mandatory_request_delay_milliseconds" {
 
 
 resource "jamfpro_restricted_software" "restricted_software_001" {
+  name                     = "tf-localtest-restrict-high-sierra"
+  process_name             = "Install macOS High Sierra.app"
+  match_exact_process_name = true
+  send_notification        = true
+  kill_process             = true
+  delete_executable        = true
+  display_message          = "This software is restricted and will be terminated."
+
+  # site {
+  #   id = 967
+  # }
+
+  scope { // scope entities will always be stated asending order. User sort() to sort the list if needed.
+    all_computers      = true
+  }
+}
+
+resource "jamfpro_restricted_software" "restricted_software_002" {
   name                     = "tf-localtest-restrict-test2"
   process_name             = "test2.app"
   match_exact_process_name = true
