@@ -1,9 +1,7 @@
 name: terraform plan
 
 on:
-  push:
-    branches:
-      - sandbox
+  pull:
     inputs:
       tf_cloud_organization:
         required: true
