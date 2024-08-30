@@ -34,7 +34,7 @@ provider "jamfpro" {
 variable "JAMFPRO_INSTANCE_FQDN" {
   description = "The Jamf Pro FQDN (fully qualified domain name). Example: https://mycompany.jamfcloud.com"
   sensitive   = true
-  default     = "https://buttercup.jamfcloud.com"
+  default     = ""
 }
 
 variable "JAMFPRO_AUTH_METHOD" {

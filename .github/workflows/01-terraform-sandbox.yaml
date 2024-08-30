@@ -10,6 +10,7 @@ on:
       - 'config-*'
       - 'docs-*'
       - 'test-*'
+      - '*'
 
   workflow_dispatch:
     inputs:
@@ -19,7 +20,7 @@ on:
         default: 'feature-'
 
 env:
-  TF_CLOUD_ORGANIZATION: "deploymenttheory"
+  TF_CLOUD_ORGANIZATION: "vartan"
   TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
   TF_WORKSPACE: "terraform-jamfpro-sandbox"
   CONFIG_DIRECTORY: "workload/terraform/jamfpro"
