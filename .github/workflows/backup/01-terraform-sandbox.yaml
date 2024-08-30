@@ -22,7 +22,7 @@ on:
 env:
   TF_CLOUD_ORGANIZATION: "vartan"
   TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
-  TF_WORKSPACE: "terraform-jamfpro-sandbox"
+  TF_WORKSPACE: "terraform-demo-jamfpro"
   CONFIG_DIRECTORY: "workload/terraform/jamfpro"
   PIPELINE_DEBUG: "true"
   # other env vars are set within tfcloud directly for within the tf workspace

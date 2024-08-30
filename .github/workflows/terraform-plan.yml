@@ -1,7 +1,9 @@
 name: terraform plan
 
 on:
-  workflow_call:
+  push:
+    branches:
+      - sandbox
     inputs:
       tf_cloud_organization:
         required: true
