@@ -40,19 +40,19 @@ variable "JAMFPRO_INSTANCE_FQDN" {
 variable "JAMFPRO_AUTH_METHOD" {
   description = "Auth method chosen for Jamf. Options are 'basic' or 'oauth2'."
   sensitive   = true
-  default     = "oauth2"
+  default     = ""
 }
 
 variable "JAMFPRO_CLIENT_ID" {
   description = "The Jamf Pro Client ID for authentication."
   sensitive   = true
-  default     = "de5d71ad-64cf-4f60-b326-cc0b6f052da0"
+  default     = ""
 }
 
 variable "JAMFPRO_CLIENT_SECRET" {
   description = "The Jamf Pro Client Secret for authentication."
   sensitive   = true
-  default     = "oivLdBJPQIEpVkmk6DoReOLxUnraY6AWQxZ4zUX7v9KAJJrdHbzLZjK00dlM5KsD"
+  default     = ""
 }
 
 variable "jamfpro_basic_auth_username" {
@@ -121,16 +121,5 @@ resource "jamfpro_restricted_software" "restricted_software_001" {
 
   scope { // scope entities will always be stated asending order. User sort() to sort the list if needed.
     all_computers      = true
-    computer_ids       = sort([21, 16])
-    computer_group_ids = ([55, 78])
-    building_ids       = ([1348, 1349])
-    department_ids     = ([37287, 37288])
-    exclusions {
-      computer_ids                         = [14, 15]
-      computer_group_ids                   = [118]
-      building_ids                         = ([1348, 1349])
-      department_ids                       = ([37287, 37288])
-      directory_service_or_local_usernames = ["Jane Smith", "John Doe"]
-    }
   }
 }
