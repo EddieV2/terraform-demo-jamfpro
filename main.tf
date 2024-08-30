@@ -17,10 +17,10 @@ terraform {
 }
 
 provider "jamfpro" {
-  jamfpro_instance_fqdn                = var.jamfpro_instance_fqdn
-  auth_method                          = var.jamfpro_auth_method
-  client_id                            = var.jamfpro_client_id
-  client_secret                        = var.jamfpro_client_secret
+  jamfpro_instance_fqdn                = var.JAMFPRO_INSTANCE_FQDN
+  auth_method                          = var.JAMFPRO_AUTH_METHOD
+  client_id                            = var.JAMFPRO_CLIENT_ID
+  client_secret                        = var.JAMFPRO_CLIENT_SECRET
   enable_client_sdk_logs               = var.enable_client_sdk_logs
   client_sdk_log_export_path           = var.client_sdk_log_export_path
   hide_sensitive_data                  = var.jamfpro_hide_sensitive_data
@@ -31,28 +31,28 @@ provider "jamfpro" {
   # basic_auth_password           = var.jamfpro_basic_auth_password
 }
 
-variable "jamfpro_instance_fqdn" {
+variable "JAMFPRO_INSTANCE_FQDN" {
   description = "The Jamf Pro FQDN (fully qualified domain name). Example: https://mycompany.jamfcloud.com"
   sensitive   = true
-  default     = ""
+  default     = "https://buttercup.jamfcloud.com"
 }
 
-variable "jamfpro_auth_method" {
+variable "JAMFPRO_AUTH_METHOD" {
   description = "Auth method chosen for Jamf. Options are 'basic' or 'oauth2'."
   sensitive   = true
-  default     = ""
+  default     = "oauth2"
 }
 
-variable "jamfpro_client_id" {
+variable "JAMFPRO_CLIENT_ID" {
   description = "The Jamf Pro Client ID for authentication."
   sensitive   = true
-  default     = ""
+  default     = "de5d71ad-64cf-4f60-b326-cc0b6f052da0"
 }
 
-variable "jamfpro_client_secret" {
+variable "JAMFPRO_CLIENT_SECRET" {
   description = "The Jamf Pro Client Secret for authentication."
   sensitive   = true
-  default     = ""
+  default     = "oivLdBJPQIEpVkmk6DoReOLxUnraY6AWQxZ4zUX7v9KAJJrdHbzLZjK00dlM5KsD"
 }
 
 variable "jamfpro_basic_auth_username" {
@@ -97,12 +97,12 @@ variable "jamfpro_jamf_load_balancer_lock" {
 
 variable "jamfpro_token_refresh_buffer_period_seconds" {
   description = "The buffer period in seconds for token refresh."
-  default     = 300
+  default     = 30
 }
 
 variable "jamfpro_mandatory_request_delay_milliseconds" {
   description = "A mandatory delay after each request before returning to reduce high volume of requests in a short time."
-  default     = 100
+  default     = 50
 }
 
 
